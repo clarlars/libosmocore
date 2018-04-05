@@ -225,7 +225,14 @@ int gsm_7bit_decode_n_ussd(char *text, size_t n, const uint8_t *user_data, uint8
 
 	nchars = gsm_7bit_decode_n_hdr(text, n, user_data, length, 0);
 	/* remove last <CR>, if it fits up to the end of last octet */
-	if (nchars && (user_data[gsm_get_octet_len(length) - 1] >> 1) == '\r')
+	//if (nchars && (user_data[gsm_get_octet_len(length) - 1] >> 1) == '\r')
+	//	text[--nchars] = '\0';
+
+	// Remove last <CR> from the converted 8 bit bytes NOT the raw bytes
+	// Otherwise, we lose the final byte if it equals 0x0d when shifted
+	// right 1 bit (i.e. 0x1a >> 0x0d, 0x1b >> 0x0d).  This would be a problem
+	// for any 2 digit ASCII number ending in 4, 5, 6, or 7.   
+	if (nchars && (text[nchars - 1]) == '\r')
 		text[--nchars] = '\0';
 
 	return nchars;
